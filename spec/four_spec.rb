@@ -20,21 +20,42 @@ RSpec.describe "Game" do
   end
 
   describe "Board" do
+    let(:board) { game.board }
+
     it "(game) has a board" do
-      expect(game.board).to be_truthy
+      expect(board).to be_truthy
     end
 
     it "has 7 columns" do
-      expect(game.board.field.length).to eq(7)
+      expect(board.grid[0].length).to eq(7)
     end
 
-    it "has 7 rows and a gutter in each column" do
-      expect(game.board.field[0].length).to eq(8)
+    it "has 6 rows" do
+      expect(board.grid.length).to eq(6)
     end
 
     it "is mutable" do
       game.take_turn(4)
-      expect(game.board.field[4][0]).to eq("\u26AA'")
+      expect(board.grid[5][3]).to eq("\u26AA")
+    end
+
+    context "when there is a disk in the column" do
+      it "leaves the first disk intact" do
+        game.take_turn(2)
+        game.take_turn(2)
+        expect(board.grid[5][1]).to eq("\u26AA")
+      end
+
+      it "adds the disk to the second row" do
+        expect(board.grid[4][1]).to eq("\u26Ab")
+      end
+
+    end
+
+    context "when the column if full" do
+      it "prompts user to pick another column" do
+
+      end
     end
   end
 
@@ -50,11 +71,15 @@ RSpec.describe "Game" do
     it "can change the cell on the board" do
       game.take_turn(4)
       game.take_turn(3)
-      expect(game.board.field[4][0]).to eq("\u26AA'")
-      expect(game.board.field[3][0]).to eq("\u26AB'")
+      expect(game.board.grid[5][3]).to eq("\u26AA")
+      expect(game.board.grid[5][2]).to eq("\u26AB")
     end
 
     it "can win" do
+      game.take_turn(4)
+      game.take_turn(5)
+      game.take_turn(4)
+      expect(game.game_over?).to be true
     end
   end
 

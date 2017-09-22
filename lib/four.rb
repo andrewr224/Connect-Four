@@ -4,10 +4,14 @@ class Game
   def initialize
     @board = Board.new
     @players = [Player.new("\u26AA"), Player.new("\u26AB")]
-    # take_turn until game_over?
+
+    puts "The game of Connect Four has begun!"
+    #take_turn until game_over?
   end
 
   def take_turn(pick=nil)
+    puts
+    show_board
     current_player = @players.shift
 
     column = current_player.pick_column(pick)
@@ -17,35 +21,47 @@ class Game
   end
 
   def show_board
-    @board.to_s
+    @board.show_grid
   end
 
   def game_over?
-    @players[0].sign == "\u26AB" ? true : false
+    false unless @players.last.victory? || @board.draw?
   end
 
   class Board
-    attr_reader :field
-    @@field = [["'"," '"," '"," '"," '"," '"," '"," '"],["'"," '"," '"," '"," '"," '"," '"," '"],["'"," '"," '"," '"," '"," '"," '"," '"],["'"," '"," '"," '"," '"," '"," '"," '"],["'"," '"," '"," '"," '"," '"," '"," '"],["'"," '"," '"," '"," '"," '"," '"," '"],["'"," '"," '"," '"," '"," '"," '"," '"]]
+    attr_reader :grid
+    @@grid = [["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"]]
 
     def initialize
-      @field = @@field.dup
+      @grid = @@grid.dup
     end
 
     def drop_disk(col, sign)
-      @field[col][0] = "#{sign}'"
+      col -= 1
+      i = 5
+      until (@grid[i][col] == "_") || i < 0
+        i -= 1
+      end
+      @grid[i][col] = "#{sign}"
+
+      puts
+      show_grid
     end
 
-    def to_s
-      field.each do |row|
+    def show_grid
+      grid.each do |row|
+        print "|"
         row.each do |e|
-          print e
+          print "#{e}|"
         end
         puts
       end
       puts " 1 2 3 4 5 6 7"
     end
 
+    def draw?
+      false
+    end
   end
 
   class Player
@@ -55,13 +71,19 @@ class Game
     end
 
     def pick_column(answer=nil)
-      #print "Please enter a culumn number to drop your disk: "
+      print "Please enter a culumn to drop your disk in: "
       answer = answer || gets.chomp.to_i
       until (1..7).include? answer
         print "\nEnter a number between 1 and 7: "
-        answer = gets.chomp
+        answer = gets.chomp.to_i
       end
       answer
     end
+
+    def victory?
+      false
+    end
   end
 end
+
+Game.new
