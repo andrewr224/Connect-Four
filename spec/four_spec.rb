@@ -33,8 +33,8 @@ RSpec.describe "Game" do
     end
 
     it "is mutable" do
-      game.pick_cell(4)
-      expect(game.board.field[4][0]).to eq("+'")
+      game.take_turn(4)
+      expect(game.board.field[4][0]).to eq("\u26AA'")
     end
   end
 
@@ -43,14 +43,15 @@ RSpec.describe "Game" do
       expect(game.players.length).to eq(2)
     end
 
-    it "has it's unique sybmol" do
-
+    it "has it's unique sign" do
+      expect(game.players[0].sign).to_not eq(game.players[1].sign)
     end
 
     it "can change the cell on the board" do
-      game.pick_cell(4)
-      game.pick_cell(3)
-      #expect(game.board.field[3][0]).to eq("-'")
+      game.take_turn(4)
+      game.take_turn(3)
+      expect(game.board.field[4][0]).to eq("\u26AA'")
+      expect(game.board.field[3][0]).to eq("\u26AB'")
     end
 
     it "can win" do
