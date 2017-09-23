@@ -4,18 +4,19 @@ class Game
   def initialize
     @board = Board.new
     @players = [Player.new("\u26AA"), Player.new("\u26AB")]
-
-    puts "The game of Connect Four has begun!"
-    #take_turn until game_over?
   end
 
-  def take_turn(pick=nil)
-    puts
+  def start_game
+    puts "The game of Connect Four has begun!"
+    take_turn until game_over?
+  end
+
+  def take_turn
     show_board
     current_player = @players.shift
 
-    column = current_player.pick_column(pick)
-    @board.drop_disk(column, current_player.sign)
+    column = current_player.pick_column
+    @board.drop_disk(column, current_player)
 
     @players << current_player
   end
@@ -25,7 +26,7 @@ class Game
   end
 
   def game_over?
-    false unless @players.last.victory? || @board.draw?
+    false unless @board.victory?(players.last) || @board.draw?
   end
 
   class Board
@@ -36,19 +37,23 @@ class Game
       @grid = @@grid.dup
     end
 
-    def drop_disk(col, sign)
+    def drop_disk(col, player)
       col -= 1
       i = 5
       until (@grid[i][col] == "_") || i < 0
         i -= 1
       end
-      @grid[i][col] = "#{sign}"
 
-      puts
-      show_grid
+      if i >= 0
+        @grid[i][col] = "#{player.sign}"
+      else
+        puts "The coulumn is already full."
+        drop_disk(player.pick_column, player)
+      end
     end
 
     def show_grid
+      puts
       grid.each do |row|
         print "|"
         row.each do |e|
@@ -57,6 +62,35 @@ class Game
         puts
       end
       puts " 1 2 3 4 5 6 7"
+    end
+
+    def victory?(player)
+      score = 0
+
+      @grid.each_with_index do |row, i|
+        row.each_with_index do |cell, ii|
+          if cell == player.sign
+            score = 0
+            j = i
+            until @grid[j][ii] != cell
+              score += 1
+              j -= 1
+            end
+            return true if score == 4
+
+            score = 0
+            j = ii
+            until @grid[i][j] != cell
+              score += 1
+              j -= 1
+            end
+
+            return true if score == 4
+          end
+        end
+      end
+
+      false
     end
 
     def draw?
@@ -70,7 +104,7 @@ class Game
       @sign = sign
     end
 
-    def pick_column(answer=nil)
+    def pick_column
       print "Please enter a culumn to drop your disk in: "
       answer = answer || gets.chomp.to_i
       until (1..7).include? answer
@@ -79,11 +113,7 @@ class Game
       end
       answer
     end
-
-    def victory?
-      false
-    end
   end
 end
 
-Game.new
+#Game.new.start_game
