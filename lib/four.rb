@@ -11,8 +11,9 @@ class Game
     take_turn until game_over?
   end
 
+
   def take_turn
-    show_board
+    @board.show_grid
     current_player = @players.shift
 
     column = current_player.pick_column
@@ -21,17 +22,29 @@ class Game
     @players << current_player
   end
 
-  def show_board
-    @board.show_grid
-  end
-
   def game_over?
-    false unless @board.victory?(players.last) || @board.draw?
+    if @board.victory?(players.last)
+      @board.show_grid
+      puts ["The #{players.last.sign} player is victorious!",
+        "The #{players.last.sign} player shall drink from the cup of a champion today!",
+        "The #{players.last.sign} player has crushed the enemy!",
+        "The #{players.last.sign} player is unstoppable!",
+        "The #{players.last.sign} player is reigns supreme!"
+      ].sample
+      return true
+    elsif @board.draw?
+      @board.show_grid
+      puts "It's a draw!"
+      return true
+    end
   end
 
   class Board
     attr_reader :grid
-    @@grid = [["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"]]
+    @@grid = [["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],
+              ["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"],
+              ["_","_","_","_","_","_","_"],["_","_","_","_","_","_","_"]
+            ]
 
     def initialize
       @grid = @@grid.dup
@@ -65,35 +78,58 @@ class Game
     end
 
     def victory?(player)
-      score = 0
-
       @grid.each_with_index do |row, i|
         row.each_with_index do |cell, ii|
           if cell == player.sign
+
+            #Vertical check
             score = 0
             j = i
-            until @grid[j][ii] != cell
+            until (j < 0) || @grid[j][ii] != cell
               score += 1
               j -= 1
             end
             return true if score == 4
 
+            #Horizontal check
             score = 0
             j = ii
-            until @grid[i][j] != cell
+            until (j < 0) || @grid[i][j] != cell
               score += 1
               j -= 1
             end
-
             return true if score == 4
+
+            #Diagonal check
+            score = 0
+            j = i
+            jj = ii
+            until (j < 0 && jj < 0) || @grid[j][jj] != cell
+              score += 1
+              j -= 1
+              jj -= 1
+            end
+            return true if score == 4
+
+            #Diagonal check (different axis)
+            score = 0
+            j = i
+            jj = ii
+            until (i < 0 && jj > 6) || @grid[j][jj] != cell
+              score += 1
+              j -= 1
+              jj += 1
+            end
+            return true if score == 4
+
           end
         end
       end
-
       false
     end
 
     def draw?
+      return true unless @grid.flatten.include? "_"
       false
     end
   end
@@ -105,7 +141,7 @@ class Game
     end
 
     def pick_column
-      print "Please enter a culumn to drop your disk in: "
+      print "Please pick a culumn to drop your disk: "
       answer = answer || gets.chomp.to_i
       until (1..7).include? answer
         print "\nEnter a number between 1 and 7: "
@@ -116,4 +152,4 @@ class Game
   end
 end
 
-#Game.new.start_game
+
